@@ -86,17 +86,45 @@ class Toplevel1:
             else:
                 b64txt = taglist[0].childNodes[0].data + "================================"
                 normalTxt = base64.b64decode(b64txt)
-                normalxlm = minidom.parseString(normalTxt)
-                prettyxml = normalxlm.toprettyxml()
+                
                 
                 if self.flag.get() == 1:
+                    normalxlm = minidom.parseString(normalTxt)
+                    prettyxml = normalxlm.toprettyxml()
                     self.Scrolledtext2.delete('1.0','end')
                     self.Scrolledtext2.insert('1.0',prettyxml)
-                    print(prettyxml)
+                    #print(prettyxml)
                 else:
                     self.Scrolledtext2.delete('1.0','end')
                     self.Scrolledtext2.insert('1.0',normalTxt)
-                    print(normalTxt)
+                    #print(normalTxt)
+                
+                gridDoc = et.fromstring(normalTxt)
+                labelText=[]
+                editText = []
+                for element in gridDoc.iter():
+                    labelText.append( element.tag.split('}')[-1] )
+                    editText.append( element.text)
+                print(len(labelText))
+                print(len(editText))                  
+                self.labels=[]
+                self.entry=[]
+                for i in range(len(labelText)):
+                    self.labels.append(tk.Label(self.Scrolledwindow1.scrollable_frame))
+                    self.labels[i].place(x=20, y=20+(i*20), height=18, width=246)
+                    self.labels[i].configure(text=labelText[i])
+                    self.labels[i].pack()
+                    
+                    self.entry.append(tk.Text(self.Scrolledwindow1.scrollable_frame))
+                    self.entry[i].place(x=330, y=20+(i*20), relheight=0.034, relwidth=0.458)
+                    self.entry[i].configure(takefocus="")
+                    self.entry[i].configure(cursor="xterm")
+                    if editText[i] == None or editText[i] == '':
+                        self.entry[i].configure(state='disabled')
+                    else:
+                        self.entry[i].insert('1.0',editText[i])
+                    self.entry[i].pack()
+                
     def enc_save(self):
         newxmlTxt = self.Scrolledtext1.get('1.0','end')[:-1]
         newcontentTxt = self.Scrolledtext2.get('1.0','end')[:-1]
@@ -105,6 +133,7 @@ class Toplevel1:
         print(newxmlTxt.split('\n'))
         try:
             nfName = minidom.parseString(newxmlTxt).getElementsByTagName('messageId')[0].childNodes[0].data
+            nfName +='.xml'
         except Exception:
             nfName = self.fname.replace('.xml','_new.xml')
             showinfo('Error','File Name not Found in XML!\nNew File saved as '+nfName)
@@ -125,7 +154,7 @@ class Toplevel1:
                 line=line.replace(line[start:end],encodednewTxt)
                 #print(line)
             nf.write(line+"\n")
-        showinfo('Saved','File saved as: '+nfName)
+        showinfo('Saved','File saved as: '+os.getcwd()+'\\' +nfName)
 
     def __init__(self, top=None):
         '''This class configures and populates the toplevel window.
@@ -164,28 +193,6 @@ class Toplevel1:
         self.Label1.configure(highlightcolor="black")
         self.Label1.configure(text='''File Name :''')
         
-#        self.Label2 = tk.Label(top)
-#        self.Label2.place(relx=0.034, rely=0.101, height=21, width=214)
-#        self.Label2.configure(activebackground="#f9f9f9")
-#        self.Label2.configure(activeforeground="black")
-#        self.Label2.configure(background="#d9d9d9")
-#        self.Label2.configure(disabledforeground="#a3a3a3")
-#        self.Label2.configure(foreground="#000000")
-#        self.Label2.configure(highlightbackground="#d9d9d9")
-#        self.Label2.configure(highlightcolor="black")
-#        self.Label2.configure(text='''Enter XML tag to decode :''')
-
-#        self.Text2 = tk.Text(top)
-#        self.Text2.place(relx=0.331, rely=0.101, relheight=0.03, relwidth=0.142)
-#        self.Text2.configure(background="white")
-#        self.Text2.configure(font="TkTextFont")
-#        self.Text2.configure(foreground="black")
-#        self.Text2.configure(highlightbackground="#d9d9d9")
-#        self.Text2.configure(highlightcolor="black")
-#        self.Text2.configure(insertbackground="black")
-#        self.Text2.configure(selectbackground="#c4c4c4")
-#        self.Text2.configure(selectforeground="black")
-#        self.Text2.configure(wrap="none")
 
         self.TButton2 = ttk.Button(top,command = self.load)
         self.TButton2.place(relx=0.414, rely=0.110, height=25, width=76)
@@ -322,10 +329,36 @@ class Toplevel1:
         self.Scrolledtext2.configure(selectbackground="#c4c4c4")
         self.Scrolledtext2.configure(selectforeground="black")
         self.Scrolledtext2.configure(wrap="none")
+        # self.PNotebook1.bind('<Button-1>',_button_press)
+        # self.PNotebook1.bind('<ButtonRelease-1>',_button_release)
+        # self.PNotebook1.bind('<Motion>',_mouse_over)
+        
+        # self.Scrolledwindow1 = ScrolledWindow(self.PNotebook1_t3)
+        # self.Scrolledwindow1.place(relx=0.012, rely=0.018, relheight=0.95
+        #         , relwidth=0.982)
+        # self.Scrolledwindow1.configure(background="white")
+        # self.Scrolledwindow1.configure(borderwidth="2")
+        # self.Scrolledwindow1.configure(relief="groove")
+        # self.Scrolledwindow1.configure(selectbackground="#c4c4c4")
+        # self.color = self.Scrolledwindow1.cget("background")
+        # self.Scrolledwindow1_f = tk.Frame(self.Scrolledwindow1,
+        #                       background=self.color)
+        # self.Scrolledwindow1.create_window(0, 0, anchor='nw',
+        #                               window=self.Scrolledwindow1_f)
+        
+        self.Scrolledwindow1 = ScrollableFrame(self.PNotebook1_t3)
+        self.Scrolledwindow1.pack()
+        # self.Label3 = tk.Label(self.Scrolledwindow1)
+        # self.Label3.place(relx=0.025, rely=0.094, height=18, width=35)
+        # self.Label3.configure(text='''Label''')
+  
+        # self.TEntry1 = ttk.Entry(self.Scrolledwindow1)
+        # self.TEntry1.place(relx=0.1, rely=0.094, relheight=0.034, relwidth=0.18)
+        # self.TEntry1.configure(takefocus="")
+        # self.TEntry1.configure(cursor="xterm")
         self.PNotebook1.bind('<Button-1>',_button_press)
         self.PNotebook1.bind('<ButtonRelease-1>',_button_release)
         self.PNotebook1.bind('<Motion>',_mouse_over)
-
         
 
         self.TButton1 = ttk.Button(top,command = self.enc_save)
@@ -435,6 +468,35 @@ class ScrolledText(AutoScroll, tk.Text):
     def __init__(self, master, **kw):
         tk.Text.__init__(self, master, **kw)
         AutoScroll.__init__(self, master)
+
+class ScrolledWindow(AutoScroll, tk.Canvas):
+      '''A standard Tkinter Canvas widget with scrollbars that will
+      automatically show/hide as needed.'''
+      @_create_container
+      def __init__(self, master, **kw):
+           tk.Canvas.__init__(self, master, **kw)
+           AutoScroll.__init__(self, master)
+
+class ScrollableFrame(ttk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = ttk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
 import platform
 def _bound_to_mousewheel(event, widget):

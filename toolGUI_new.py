@@ -109,28 +109,37 @@ class Toplevel1:
                 print(len(editText))                  
                 self.labels=[]
                 self.entry=[]
+                self.check=['applicationDate','applicationId','estimatedClosingDate','submitRequestTime','dealId']
+                j=0
                 for i in range(len(labelText)):
-                    self.labels.append(tk.Label(self.Scrolledwindow1.scrollable_frame))
-                    self.labels[i].place(x=20, y=20+(i*20), height=18, width=246)
-                    self.labels[i].configure(text=labelText[i])
-                    self.labels[i].pack()
-                    
-                    self.entry.append(tk.Text(self.Scrolledwindow1.scrollable_frame))
-                    self.entry[i].place(x=330, y=20+(i*20), relheight=0.034, relwidth=0.458)
-                    self.entry[i].configure(takefocus="")
-                    self.entry[i].configure(cursor="xterm")
-                    if editText[i] == None or editText[i] == '':
-                        self.entry[i].configure(state='disabled')
-                    else:
-                        self.entry[i].insert('1.0',editText[i])
-                    self.entry[i].pack()
+                    if labelText[i] in self.check:
+                        self.labels.append(tk.Text(self.Scrolledwindow1))
+                        self.labels[j].place(x=20, y=20+(j*20), height=18, width=246)
+                        #self.labels[i].configure(height=18,width=250)
+                        #self.labels[i].grid(row =i, column=0)
+                        self.labels[j].insert('1.0',labelText[i])
+                        self.labels[j].configure(state='disabled')
+                        #self.labels[i].pack()
+                        
+                        self.entry.append(tk.Text(self.Scrolledwindow1))
+                        self.entry[j].place(x=330, y=20+(j*20), height=18, width=250)
+                       #self.entry[i].grid(row=i,column=1)
+                       #self.entry[i].configure(height=18,width=250)
+                        self.entry[j].configure(takefocus="")
+                        self.entry[j].configure(cursor="xterm")
+                        if editText[i] == None or editText[i] == '':
+                            self.entry[j].configure(state='disabled')
+                        else:
+                            self.entry[j].insert('1.0',editText[i])
+                        j+=1
+                    #self.entry[i].pack()
                 
     def enc_save(self):
         newxmlTxt = self.Scrolledtext1.get('1.0','end')[:-1]
         newcontentTxt = self.Scrolledtext2.get('1.0','end')[:-1]
-#        print(newcontentTxt)
+        print(newcontentTxt)
 #        print('\n\n\n')
-        print(newxmlTxt.split('\n'))
+        #print(newxmlTxt.split('\n'))
         try:
             nfName = minidom.parseString(newxmlTxt).getElementsByTagName('messageId')[0].childNodes[0].data
             nfName +='.xml'
@@ -142,6 +151,13 @@ class Toplevel1:
         #print(newxmltxt.split())
         #xml_string = os.linesep.join([s for s in newxmltxt.splitlines() if s.strip()]) # remove the weird newline issue
         #print(xml_string)
+        
+        for i in range(len(self.labels)):
+            if self.labels[i].get('1.0','end')[:-1] in newcontentTxt:
+                start = newcontentTxt.find('<'+self.labels[i].get('1.0','end')[:-1]+'>')+len('<'+self.labels[i].get('1.0','end')[:-1]+'>')
+                end = newcontentTxt.find('</'+self.labels[i].get('1.0','end')[:-1]+'>')
+                newcontentTxt = newcontentTxt.replace(newcontentTxt[start:end],self.entry[i].get('1.0','end')[:-1])
+                
         encodednewTxt = base64.b64encode(newcontentTxt.encode('ascii')).decode('ascii').rstrip('=')
 #        print(encodednewTxt)
 #        nfName = self.fname.replace('.xml','_new.xml')
@@ -333,25 +349,30 @@ class Toplevel1:
         # self.PNotebook1.bind('<ButtonRelease-1>',_button_release)
         # self.PNotebook1.bind('<Motion>',_mouse_over)
         
-        # self.Scrolledwindow1 = ScrolledWindow(self.PNotebook1_t3)
-        # self.Scrolledwindow1.place(relx=0.012, rely=0.018, relheight=0.95
-        #         , relwidth=0.982)
-        # self.Scrolledwindow1.configure(background="white")
-        # self.Scrolledwindow1.configure(borderwidth="2")
-        # self.Scrolledwindow1.configure(relief="groove")
-        # self.Scrolledwindow1.configure(selectbackground="#c4c4c4")
-        # self.color = self.Scrolledwindow1.cget("background")
-        # self.Scrolledwindow1_f = tk.Frame(self.Scrolledwindow1,
-        #                       background=self.color)
-        # self.Scrolledwindow1.create_window(0, 0, anchor='nw',
-        #                               window=self.Scrolledwindow1_f)
+                              
+        self.Scrolledwindow1 = ScrolledWindow(self.PNotebook1_t3)
+        self.Scrolledwindow1.place(relx=0.012, rely=0.018, relheight=0.95
+                 , relwidth=0.982)
+        self.Scrolledwindow1.configure(background="white")
+        self.Scrolledwindow1.configure(borderwidth="2")
+        self.Scrolledwindow1.configure(relief="groove")
+        self.Scrolledwindow1.configure(selectbackground="#c4c4c4")
+        self.color = self.Scrolledwindow1.cget("background")
+        self.Scrolledwindow1_f = tk.Frame(self.Scrolledwindow1,
+                               background=self.color)
+        self.Scrolledwindow1.create_window(0, 0, anchor='nw',
+                                       window=self.Scrolledwindow1_f)
+
+                              
+#        self.Scrolledwindow1 = ScrollableFrame(self.Frame1)
+#        self.Scrolledwindow1.pack(fill='both',expand=True)
+        self.Label3 = tk.Label(self.Scrolledwindow1)
+        self.Label3.place(x=20, y=2, height=18, width=250)
+        self.Label3.configure(text='''XML TAG''')
         
-        self.Scrolledwindow1 = ScrollableFrame(self.PNotebook1_t3)
-        self.Scrolledwindow1.pack()
-        # self.Label3 = tk.Label(self.Scrolledwindow1)
-        # self.Label3.place(relx=0.025, rely=0.094, height=18, width=35)
-        # self.Label3.configure(text='''Label''')
-  
+        self.Label4 = tk.Label(self.Scrolledwindow1)
+        self.Label4.place(x=330, y=2, height=18, width=250)
+        self.Label4.configure(text='''Value''')
         # self.TEntry1 = ttk.Entry(self.Scrolledwindow1)
         # self.TEntry1.place(relx=0.1, rely=0.094, relheight=0.034, relwidth=0.18)
         # self.TEntry1.configure(takefocus="")
